@@ -1780,23 +1780,65 @@ Thread.new {
 						if current_stream == 'death'
 							# fixme: has been vaporized!
 							# fixme: ~ off to a rough start
-							if text =~ /^\s\*\s(The death cry of )?([A-Z][a-z]+) (?:just bit the dust!|echoes in your mind!)/
+							if text =~ /^\s\*\s(The death cry of )?([7A-Z][a-z]+)(?:['s]*) (just bit the dust!|is off to a rough start!  (?:He|She) just bit the dust!|echoes in your mind!|just got squashed!|has gone to feed the fishes!|just turned (?:his|her) last page!|is off to a rough start!  (?:He|She) was just put on ice!|was just put on ice!|just punched a one-way ticket!|is going home on (?:his|her) shield!|just took a long walk off of a short pier!|is dust in the wind!|is six hundred feet under!|just lost (?:his|her) way somewhere in the Settlement of Reim!|just gave up the ghost!|flame just burnt out in the Sea of Fire!|failed within the Bank at Bloodriven!|was just defeated in Duskruin Arena!|failed to bring a shrubbery to the Night at the Academy!)/
 								front_count = 3
-								front_count += 17 if $1
+								if $1
+									front_part = $1
+									front_count += front_part.length
+								end
 								name = $2
-								text = "#{name} #{Time.now.strftime('%l:%M%P').sub(/^0/, '')}"
+								area = $3
+								if area =~ /just bit the dust!/
+									area = "WL"
+								elsif area =~ /echoes in your mind!/
+									area = "RIFT"
+								elsif area =~ /just got squashed!/
+									area = "CY"
+								elsif area =~ /has gone to feed the fishes!/
+									area = "RR"
+								elsif area =~ /just turned (?:his|her) last page!/
+									area = "TI"
+								elsif area =~ /is off to a rough start!  (?:He|She) was just put on ice!|was just put on ice!/
+									area = "IMT"
+								elsif area =~ /just gave up the ghost!/
+									area = "TRAIL"
+								elsif area =~ /just punched a one-way ticket!/
+									area = "KD"
+								elsif area =~ /is going home on (?:his|her) shield!/
+									area = "TV"
+								elsif area =~ /just took a long walk off of a short pier!/
+									area = "SOL"
+								elsif area =~ /is dust in the wind!/
+									area = "FWI"
+								elsif area =~ /is six hundred feet under!/
+									area = "ZUL"
+								elsif area =~ /just lost (?:his|her) way somewhere in the Settlement of Reim!/
+									area = "REIM"
+								elsif area =~ /may just be going home on (?:his|her) shield!/
+									area = "RED"
+								elsif area =~ /flame just burnt out in the Sea of Fire!/
+									area = "SOS"
+								elsif area =~ /failed within the Bank at Bloodriven!/
+									area = "DR-B"
+								elsif area =~ /was just defeated in Duskruin Arena!/
+									area = "DR-A"
+								elsif area =~ /failed to bring a shrubbery to the Night at the Academy!/
+									area = "NATA"
+								elsif area =~ /has just returned to Gosaena!/
+									area = "??"
+								end
+								text = "#{name} #{area} #{Time.now.strftime('%H:%M').sub(/^0/, '')}"
 								line_colors.each { |h|
 									h[:start] -= front_count
 									h[:end] = [ h[:end], name.length ].min
 								}
 								line_colors.delete_if { |h| h[:start] >= h[:end] }
 								h = {
-									:start => (name.length+1),
+									:start => (name.length+area.length+2),
 									:end => text.length,
 									:fg => 'ff0000',
 								}
 								line_colors.push(h)
-							end
 						elsif current_stream == 'speech'
 							text = "#{text} (#{Time.now.strftime('%H:%M:%S').sub(/^0/, '')})" if Opts["speech-ts"]
 						elsif current_stream == 'logons'
